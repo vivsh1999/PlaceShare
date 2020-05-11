@@ -47,6 +47,12 @@
   .place-item__actions a {
     margin: 0.5rem;
   }
+
+  .map-containter{
+    height: 20rem;
+    width: 100%;
+  }
+
   
   @media (min-width: 768px) {
     .place-item__image {
