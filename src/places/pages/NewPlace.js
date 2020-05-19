@@ -10,7 +10,7 @@ import {
 
 import {useForm} from '../../shared/hooks/form-hook';
 
-import "./NewPlace.css";
+import "./PlaceForm.css";
 
 
 
@@ -29,7 +29,7 @@ const NewPlace = () => {
       isValid: false,
     },
   },
-  false)
+  false);
 
   
 
