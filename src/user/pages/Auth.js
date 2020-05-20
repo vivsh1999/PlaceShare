@@ -1,25 +1,33 @@
-import React,{useState} from "react";
+import React, { useState, useContext } from "react";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
-import {useForm} from '../../shared/hooks/form-hook';
-import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH,VALIDATOR_MAXLENGTH,VALIDATOR_EMAIL} from "../../shared/util/validators";
+import { useForm } from "../../shared/hooks/form-hook";
+import {
+  VALIDATOR_REQUIRE,
+  VALIDATOR_MINLENGTH,
+  VALIDATOR_MAXLENGTH,
+  VALIDATOR_EMAIL,
+} from "../../shared/util/validators";
 import Card from "../../shared/components/UIElements/Card";
+import { AuthContext } from "../../shared/context/AuthContext";
 
-import './Auth.css';
+import "./Auth.css";
 const Auth = (props) => {
-    const [isLoginMode, setIsLoginMode] = useState(true);
+  const auth=useContext(AuthContext);
+
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const [formState, inputHandler, setFormData] = useForm(
     {
       email: {
-        value: '',
-        isValid: false
+        value: "",
+        isValid: false,
       },
       password: {
-        value: '',
-        isValid: false
-      }
+        value: "",
+        isValid: false,
+      },
     },
     false
   );
@@ -29,7 +37,7 @@ const Auth = (props) => {
       setFormData(
         {
           ...formState.inputs,
-          name: undefined
+          name: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -38,19 +46,20 @@ const Auth = (props) => {
         {
           ...formState.inputs,
           name: {
-            value: '',
-            isValid: false
-          }
+            value: "",
+            isValid: false,
+          },
         },
         false
       );
     }
-    setIsLoginMode(prevMode => !prevMode);
+    setIsLoginMode((prevMode) => !prevMode);
   };
 
-  const authSubmitHandler = event => {
+  const authSubmitHandler = (event) => {
     event.preventDefault();
     console.log(formState.inputs);
+    auth.login();
   };
 
   return (
@@ -83,16 +92,16 @@ const Auth = (props) => {
           id="password"
           type="password"
           label="Password"
-          validators={[VALIDATOR_MINLENGTH(6),VALIDATOR_MAXLENGTH(15)]}
+          validators={[VALIDATOR_MINLENGTH(6), VALIDATOR_MAXLENGTH(15)]}
           errorText="Please enter a valid password, between 6 to 15 characters."
           onInput={inputHandler}
         />
         <Button type="submit" disabled={!formState.isValid}>
-          {isLoginMode ? 'LOGIN' : 'SIGNUP'}
+          {isLoginMode ? "LOGIN" : "SIGNUP"}
         </Button>
       </form>
       <Button inverse onClick={switchModeHandler}>
-        SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
+        SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
       </Button>
     </Card>
   );
