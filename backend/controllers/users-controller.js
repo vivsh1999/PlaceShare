@@ -1,54 +1,66 @@
 const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
-const DUMMY_USERS = [
-  {
-    name: "u1",
-    email: "u1@mail.com",
-    password: "pass",
-  },
-  {
-    name: "u2",
-    email: "u2@mail.com",
-    password: "pass",
-  },
-];
+const User = require("../models/user");
 
-const getAllUsers = (req, res, next) => {
-  res.status(200).json({ users: DUMMY_USERS });
+const getAllUsers = async (req, res, next) => {
+  let users;
+  try {
+    users = await User.find({}, "-password");
+  } catch (error) {
+    return next(new HttpError("Could not get users.Try again.", 500));
+  }
+  res.status(200).json({ users: users });
 };
 
-const signupUser = (req, res, next) => {
+const signupUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new HttpError("Incorrect input(s).", 422));
   }
   const { name, email, password } = req.body;
 
-  const hasUser = DUMMY_USERS.find((u) => (u.email = email));
+  let existingUser;
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (error) {
+    return next(new HttpError("Something went wrong.Try Again.", 500));
+  }
 
-  if (hasUser) {
+  if (existingUser) {
     return next(
       new HttpError("Already have account registered with that email.", 409)
     );
   }
 
-  const createdUser = {
+  const createdUser = new User({
     name,
     email,
     password,
-  };
-  DUMMY_USERS.push(createdUser);
-  res.status(201).json({ user: createdUser });
+    places: [],
+    image:
+      "https://png.pngtree.com/element_our/png/20181206/users-vector-icon-png_260862.jpg",
+  });
+  try {
+    await createdUser.save();
+  } catch (error) {
+    return next(new HttpError("Sign up failed.Try again." + error, 500));
+  }
+
+  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
-const loginUser = (req, res, next) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = DUMMY_USERS.find(
-    (user) => user.email === email && user.password === password
-  );
+  let user;
 
-  if (!user) {
+  try {
+    user = await User.findOne({ email: email });
+  } catch (error) {
+    return next(new HttpError("Login failed", 500));
+  }
+
+  if (!user || user.password !== password) {
     return next(new HttpError("Wrong Email or Password", 401));
   }
 
