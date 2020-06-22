@@ -14,7 +14,7 @@ import { AuthContext } from "../../shared/context/AuthContext";
 
 import "./Auth.css";
 const Auth = (props) => {
-  const auth=useContext(AuthContext);
+  const auth = useContext(AuthContext);
 
   const [isLoginMode, setIsLoginMode] = useState(true);
 
@@ -56,9 +56,29 @@ const Auth = (props) => {
     setIsLoginMode((prevMode) => !prevMode);
   };
 
-  const authSubmitHandler = (event) => {
+  const authSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(formState.inputs);
+    if (isLoginMode) {
+    } else {
+      try {
+        const response=await fetch("http://localhost:5000/api/users/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formState.inputs.name.value,
+            email: formState.inputs.email.value,
+            password: formState.inputs.password.value,
+          }),
+        });
+        const responseData=await response.json();
+        console.log(responseData);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     auth.login();
   };
 
