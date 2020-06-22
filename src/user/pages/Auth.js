@@ -13,10 +13,14 @@ import Card from "../../shared/components/UIElements/Card";
 import { AuthContext } from "../../shared/context/AuthContext";
 
 import "./Auth.css";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 const Auth = (props) => {
   const auth = useContext(AuthContext);
 
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoding, setIsLoding] = useState(false);
+  const [error, setError] = useState();
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -61,6 +65,7 @@ const Auth = (props) => {
     if (isLoginMode) {
     } else {
       try {
+        setIsLoding(true);
         const response=await fetch("http://localhost:5000/api/users/signup", {
           method: "POST",
           headers: {
@@ -73,17 +78,30 @@ const Auth = (props) => {
           }),
         });
         const responseData=await response.json();
+        if(!response.ok){
+          throw new Error(responseData.message);
+        }
         console.log(responseData);
+        setIsLoding(false);
+        auth.login();
       } catch (error) {
-        console.log(error);
+        setIsLoding(false);
+        setError(error.message || 'Something Went Wrong,Try again!');
       }
     }
 
-    auth.login();
+    
+  };
+
+  const errorHandler=()=>{
+    setError(null);
   };
 
   return (
+    <React.Fragment>
+      <ErrorModal error={error} onClear={errorHandler}/>
     <Card className="authentication">
+      {isLoding && <LoadingSpinner asOverlay/>}
       <h2>Login Required</h2>
       <hr />
       <form onSubmit={authSubmitHandler}>
@@ -124,6 +142,7 @@ const Auth = (props) => {
         SWITCH TO {isLoginMode ? "SIGNUP" : "LOGIN"}
       </Button>
     </Card>
+    </React.Fragment>
   );
 };
 
