@@ -7,24 +7,36 @@ import Map from "../../shared/components/UIElements/Map";
 import { AuthContext } from "../../shared/context/AuthContext";
 
 import "./PlaceItem.css";
+import useHttpClient from "../../shared/hooks/http-hook";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 
 const PlaceItem = (props) => {
   const auth = useContext(AuthContext);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const {isLoading,error,sendRequest,clearError}=useHttpClient();
 
   const openMapHandler = () => setShowMap(true);
   const closeMapHandler = () => setShowMap(false);
 
   const showDeleteWarningHandler = () => setShowConfirmModal(true);
   const CancelDeleteHandler = () => setShowConfirmModal(false);
-  const confirmDeleteHandler = () => {
-    console.log("Deleting...");
+  const confirmDeleteHandler = async () => {
+    //delete logic here
+    setShowConfirmModal(false);
+    try{
+      await sendRequest(`http://localhost:5000/api/places/${props.id}`,'DELETE');
+      props.onDelete(props.id);
+    }catch(err){
+      console.log(err);
+    }
     CancelDeleteHandler();
   };
 
   return (
     <React.Fragment>
+      <ErrorModal error={error} onClear={clearError}/>
       <Modal
         show={showMap}
         onCancel={closeMapHandler}
@@ -55,8 +67,9 @@ const PlaceItem = (props) => {
       >
         If you delete this place it cannot be undone.
       </Modal>
-      <li className="place-item">
+       <li className="place-item">
         <Card>
+      {isLoading && <LoadingSpinner asOverlay/>}
           <div className="place-item__image">
             <img src={props.image} alt={props.title} />
           </div>

@@ -141,6 +141,7 @@ const deletePlaceById = async (req, res, next) => {
     sess.commitTransaction();
   } catch (err) {
     const error = new HttpError("delete place failed, try again!" + err, 500);
+    console.log(err);
     return next(error);
   }
 
