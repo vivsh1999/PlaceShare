@@ -1,7 +1,10 @@
 import React, { useContext } from "react";
+import { useHistory } from "react-router-dom";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 import {
   VALIDATOR_REQUIRE,
@@ -9,18 +12,17 @@ import {
 } from "../../shared/util/validators";
 
 import { useForm } from "../../shared/hooks/form-hook";
-
-import "./PlaceForm.css";
 import useHttpClient from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/AuthContext";
-import ErrorModal from "../../shared/components/UIElements/ErrorModal";
-import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+
+import "./PlaceForm.css";
 
 const NewPlace = () => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
-
+  
   const userId=useContext(AuthContext).userId;
-
+  const history=useHistory();
+  
   const [formState, inputHandler] = useForm(
     {
       title: {
@@ -42,7 +44,7 @@ const NewPlace = () => {
   const formSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      const responseData = await sendRequest(
+       await sendRequest(
         "http://localhost:5000/api/places",
         "POST",
         JSON.stringify({
@@ -55,6 +57,7 @@ const NewPlace = () => {
           "Content-Type": "application/json",
         }
       );
+      history.push('/');
     } catch (err) {
       console.log(err);
     }

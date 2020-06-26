@@ -9,7 +9,7 @@ const getAllUsers = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError("Could not get users.Try again.", 500));
   }
-  res.status(200).json({ users: users });
+  res.status(200).json({ users: users.map(user=>user.toObject({getters:true})) });
 };
 
 const signupUser = async (req, res, next) => {

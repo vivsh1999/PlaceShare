@@ -71,10 +71,7 @@ const Auth = (props) => {
           JSON.stringify({
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
-          }),
-          {
-            "Content-Type": "application/json",
-          }
+          })
         );
 
         auth.login(responseData.user.id);
@@ -90,10 +87,7 @@ const Auth = (props) => {
             name: formState.inputs.name.value,
             email: formState.inputs.email.value,
             password: formState.inputs.password.value,
-          }),
-          {
-            "Content-Type": "application/json",
-          }
+          })
         );
         auth.login(responseData.user.id);
       } catch (err) {
