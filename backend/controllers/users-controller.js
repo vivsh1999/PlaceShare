@@ -1,6 +1,8 @@
 const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
+const {normalizeEmail } = require("express-validator");
+
 
 const getAllUsers = async (req, res, next) => {
   let users;
@@ -37,8 +39,7 @@ const signupUser = async (req, res, next) => {
     email,
     password,
     places: [],
-    image:
-      "https://png.pngtree.com/element_our/png/20181206/users-vector-icon-png_260862.jpg",
+    image:req.file.path,
   });
   try {
     await createdUser.save();
@@ -51,7 +52,7 @@ const signupUser = async (req, res, next) => {
 
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-
+  
   let user;
 
   try {

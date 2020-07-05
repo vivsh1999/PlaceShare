@@ -3,14 +3,14 @@ const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   
-    const activeHtttpRequests=useRef([]);
+    const activeHttpRequests=useRef([]);
 
   const sendRequest = useCallback(
     async (url, method = "GET", body = null, headers = {"Content-Type": "application/json"}) => {
       setIsLoading(true);
       const httpAbortCtrl=new AbortController();
       //add current request to active Requests
-      activeHtttpRequests.current.push(httpAbortCtrl)
+      activeHttpRequests.current.push(httpAbortCtrl)
       try {
         const response = await fetch(url, {
           method,
@@ -23,7 +23,7 @@ const useHttpClient = () => {
         if (!response.ok) {
           throw new Error(responseData.message);
         }
-        activeHtttpRequests.current=activeHtttpRequests.current.filter(reqCtrl=>reqCtrl!==httpAbortCtrl);
+        activeHttpRequests.current=activeHttpRequests.current.filter(reqCtrl=>reqCtrl!==httpAbortCtrl);
         setIsLoading(false);
         return responseData;
       } catch (err) {
@@ -43,7 +43,7 @@ const useHttpClient = () => {
   useEffect(()=>{
       //it will run when component is unmount.
       return ()=>{
-          activeHtttpRequests.current.forEach(abortCtrl=>abortCtrl.abort());
+          activeHttpRequests.current.forEach(abortCtrl=>abortCtrl.abort());
       };
   },[])
   return { isLoading, error, sendRequest, clearError };

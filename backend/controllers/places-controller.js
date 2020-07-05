@@ -1,3 +1,4 @@
+const fs = require('fs');
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../utils/location");
 const { validationResult } = require("express-validator");
@@ -63,8 +64,7 @@ const createPlace = async (req, res, next) => {
     location: coordinates,
     address,
     creator,
-    imageUrl:
-      "https://images.adsttc.com/media/images/5aec/7d64/f197/cc33/4300/037e/slideshow/704-x-489.jpg",
+    imageUrl: req.file.path,
   });
   let user;
   try {
@@ -117,7 +117,7 @@ const updatePlaceById = async (req, res, next) => {
 
 const deletePlaceById = async (req, res, next) => {
   let placeId = req.params.pid;
-
+  let imgPath=null;
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -132,6 +132,7 @@ const deletePlaceById = async (req, res, next) => {
         );
       }
       creator = docs.creator;
+      imgPath=docs.imageUrl;
     });
     await User.findByIdAndUpdate(
       creator,
@@ -139,12 +140,13 @@ const deletePlaceById = async (req, res, next) => {
       { session: sess }
     );
     sess.commitTransaction();
+    fs.unlink(imgPath,(err)=>console.log(err));
   } catch (err) {
     const error = new HttpError("delete place failed, try again!" + err, 500);
     console.log(err);
     return next(error);
   }
-
+  
   res.status(200).json({ message: "deleted successfully!" });
 };
 

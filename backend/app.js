@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path =require('path');
+
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -11,6 +14,8 @@ const mongoose = require("mongoose");
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use('/uploads/images/',express.static(path.join('uploads','images')));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,15 +32,20 @@ app.use("/api/places", placesRoutes);
 app.use("/api/users", userRoutes);
 
 app.use((req, res, next) => {
-  throw new HttpError("Connot find specified route.", 404);
+  throw new HttpError("Cannot find specified route.", 404);
 });
 
 app.use((error, req, res, next) => {
+  if (req.file){
+    fs.unlink(req.file.path,(err)=>{
+      console.log('error occurred')
+    })
+  }
   if (res.headerSent) {
     return next(error);
   }
   res.status(error.code || 500);
-  res.json({ message: error.message || "An Error Occured!" });
+  res.json({ message: error.message || "An Error Occurred!" });
 });
 mongoose.set("useNewUrlParser", true);
 mongoose.set("useFindAndModify", false);
