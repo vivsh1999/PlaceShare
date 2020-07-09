@@ -1,33 +1,26 @@
-import React, { useState, useCallback } from 'react';
+import React from "react";
 import {
   BrowserRouter as Router,
   Route,
   Redirect,
-  Switch
-} from 'react-router-dom';
+  Switch,
+} from "react-router-dom";
 
-import Users from './user/pages/Users';
-import NewPlace from './places/pages/NewPlace';
-import UserPlaces from './places/pages/UserPlaces';
-import UpdatePlace from './places/pages/UpdatePlace';
-import Auth from './user/pages/Auth';
-import MainNavigation from './shared/components/Navigation/MainNavigation';
-import { AuthContext } from './shared/context/AuthContext';
+import Users from "./user/pages/Users";
+import NewPlace from "./places/pages/NewPlace";
+import UserPlaces from "./places/pages/UserPlaces";
+import UpdatePlace from "./places/pages/UpdatePlace";
+import Auth from "./user/pages/Auth";
+import MainNavigation from "./shared/components/Navigation/MainNavigation";
+import { AuthContext } from "./shared/context/AuthContext";
+import { useAuth } from "./shared/hooks/auth-hook";
 
 const App = () => {
-  const [userId, setUserId] = useState(null);
-
-  const login = useCallback((uid) => {
-    setUserId(uid);
-  }, []);
-
-  const logout = useCallback(() => {
-    setUserId(null);
-  }, []);
+  const { token, userId, login, logout } = useAuth();
 
   let routes;
 
-  if (userId) {
+  if (token) {
     routes = (
       <Switch>
         <Route path="/" exact>
@@ -64,7 +57,13 @@ const App = () => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: userId!==null,userId:userId, login: login, logout: logout }}
+      value={{
+        isLoggedIn: !!token,
+        token: token,
+        userId: userId,
+        login: login,
+        logout: logout,
+      }}
     >
       <Router>
         <MainNavigation />

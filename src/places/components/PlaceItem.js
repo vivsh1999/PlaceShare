@@ -15,7 +15,7 @@ const PlaceItem = (props) => {
   const auth = useContext(AuthContext);
   const [showMap, setShowMap] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const {isLoading,error,sendRequest,clearError}=useHttpClient();
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const openMapHandler = () => setShowMap(true);
   const closeMapHandler = () => setShowMap(false);
@@ -25,10 +25,15 @@ const PlaceItem = (props) => {
   const confirmDeleteHandler = async () => {
     //delete logic here
     setShowConfirmModal(false);
-    try{
-      await sendRequest(`http://localhost:5000/api/places/${props.id}`,'DELETE');
+    try {
+      await sendRequest(
+        `http://localhost:5000/api/places/${props.id}`,
+        "DELETE",
+        null,
+        { Authorization: "Bearer " + auth.token }
+      );
       props.onDelete(props.id);
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
     CancelDeleteHandler();
@@ -36,7 +41,7 @@ const PlaceItem = (props) => {
 
   return (
     <React.Fragment>
-      <ErrorModal error={error} onClear={clearError}/>
+      <ErrorModal error={error} onClear={clearError} />
       <Modal
         show={showMap}
         onCancel={closeMapHandler}
@@ -67,11 +72,14 @@ const PlaceItem = (props) => {
       >
         If you delete this place it cannot be undone.
       </Modal>
-       <li className="place-item">
+      <li className="place-item">
         <Card>
-      {isLoading && <LoadingSpinner asOverlay/>}
+          {isLoading && <LoadingSpinner asOverlay />}
           <div className="place-item__image">
-            <img src={`http://localhost:5000/${props.image}`} alt={props.title} />
+            <img
+              src={`http://localhost:5000/${props.image}`}
+              alt={props.title}
+            />
           </div>
           <div className="place-item__info">
             <h2>{props.title}</h2>
@@ -82,11 +90,11 @@ const PlaceItem = (props) => {
             <Button inverse onClick={openMapHandler}>
               View On Map
             </Button>
-            {auth.userId===props.creatorId && (
+            {auth.userId === props.creatorId && (
               <Button to={`/places/${props.id}`}>EDIT</Button>
             )}
 
-            {auth.userId===props.creatorId && (
+            {auth.userId === props.creatorId && (
               <Button danger onClick={showDeleteWarningHandler}>
                 DELETE
               </Button>

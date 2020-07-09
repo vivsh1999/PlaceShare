@@ -19,10 +19,10 @@ import { AuthContext } from "../../shared/context/AuthContext";
 
 const UpdatePlace = (props) => {
   const placeId = useParams().placeId;
-  const userId=useContext(AuthContext).userId;
+  const auth = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [place, setPlace] = useState();
-  const history =useHistory();
+  const history = useHistory();
   const [formState, inputHandler, setFormData] = useForm(
     {
       title: {
@@ -66,15 +66,23 @@ const UpdatePlace = (props) => {
     getCurrentData();
   }, [setFormData, placeId, sendRequest]);
 
-  const formSubmitHandler =async (event) => {
+  const formSubmitHandler = async (event) => {
     event.preventDefault();
     console.log();
     try {
-      await sendRequest(`http://localhost:5000/api/places/${placeId}`,'PATCH',JSON.stringify({
-        title:formState.inputs.title.value,
-        description:formState.inputs.description.value
-      }));
-      history.push(`/${userId}/places`);
+      await sendRequest(
+        `http://localhost:5000/api/places/${placeId}`,
+        "PATCH",
+        JSON.stringify({
+          title: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+        }),
+        {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + auth.token,
+        }
+      );
+      history.push(`/${auth.userId}/places`);
     } catch (error) {
       console.log(error);
     }

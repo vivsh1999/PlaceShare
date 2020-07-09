@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require("fs");
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../utils/location");
 const { validationResult } = require("express-validator");
@@ -50,7 +50,7 @@ const createPlace = async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(new HttpError("Incorrect input(s)", 422));
   }
-  const { title, description, address, creator } = req.body;
+  const { title, description, address} = req.body;
 
   let coordinates;
   try {
@@ -63,12 +63,12 @@ const createPlace = async (req, res, next) => {
     description,
     location: coordinates,
     address,
-    creator,
+    creator:req.userData.userId,
     imageUrl: req.file.path,
   });
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData.userId);
   } catch (error) {
     return next(new HttpError("Unable to create Place", 500));
   }
@@ -111,13 +111,17 @@ const updatePlaceById = async (req, res, next) => {
     const error = new HttpError("update place failed, try again!", 500);
     return next(error);
   }
-
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(
+      new HttpError("You are not allowed to update this place.", 401)
+    );
+  }
   res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
 const deletePlaceById = async (req, res, next) => {
   let placeId = req.params.pid;
-  let imgPath=null;
+  let imgPath = null;
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -132,21 +136,27 @@ const deletePlaceById = async (req, res, next) => {
         );
       }
       creator = docs.creator;
-      imgPath=docs.imageUrl;
+      imgPath = docs.imageUrl;
+      if (creator.toString() !== req.userData.userId) {
+        return next(
+          new HttpError("You are not allowed to delete this place.", 401)
+        );
+      }
     });
+
     await User.findByIdAndUpdate(
       creator,
       { $pull: { places: placeId } },
       { session: sess }
     );
+    
+    fs.unlink(imgPath, (err) => {throw new Error(err)});
     sess.commitTransaction();
-    fs.unlink(imgPath,(err)=>console.log(err));
   } catch (err) {
     const error = new HttpError("delete place failed, try again!" + err, 500);
-    console.log(err);
     return next(error);
   }
-  
+
   res.status(200).json({ message: "deleted successfully!" });
 };
 

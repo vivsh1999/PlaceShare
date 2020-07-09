@@ -1,8 +1,8 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
-const {normalizeEmail } = require("express-validator");
-
 
 const getAllUsers = async (req, res, next) => {
   let users;
@@ -11,7 +11,9 @@ const getAllUsers = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError("Could not get users.Try again.", 500));
   }
-  res.status(200).json({ users: users.map(user=>user.toObject({getters:true})) });
+  res
+    .status(200)
+    .json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signupUser = async (req, res, next) => {
@@ -34,38 +36,67 @@ const signupUser = async (req, res, next) => {
     );
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(new HttpError("Something went wrong.Try Again.", 500));
+  }
   const createdUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     places: [],
-    image:req.file.path,
+    image: req.file.path,
   });
   try {
     await createdUser.save();
   } catch (error) {
     return next(new HttpError("Sign up failed.Try again." + error, 500));
   }
+  //making jwt token
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createdUser.id, email: createdUser.email },
+      "SECRET_KEY",
+      { expiresIn: "1h" }
+    );
+  } catch (err) {
+    return next(new HttpError("Sign up failed.Try again." + err, 500));
+  }
 
-  res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+  res
+    .status(201)
+    .json({ userId: createdUser.id, email: createdUser.email, token });
 };
 
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
-  
-  let user;
 
+  let user;
+  let isValidPass = false;
   try {
     user = await User.findOne({ email: email });
+    isValidPass = await bcrypt.compare(password, user.password);
   } catch (error) {
     return next(new HttpError("Login failed", 500));
   }
 
-  if (!user || user.password !== password) {
-    return next(new HttpError("Wrong Email or Password", 401));
+  if (!user || !isValidPass) {
+    return next(new HttpError("Wrong Email or Password", 403));
   }
 
-  res.status(200).json({ user:user.toObject({getters:true}) });
+  let token;
+  try {
+    token = jwt.sign({ userId: user.id, email: user.email }, "SECRET_KEY", {
+      expiresIn: "1h",
+    });
+  } catch (err) {
+    return next(new HttpError("Logging in failed.Try again." + err, 500));
+  }
+
+  res.status(200).json({ userId: user.id, email: user.email, token });
 };
 
 exports.getAllUsers = getAllUsers;

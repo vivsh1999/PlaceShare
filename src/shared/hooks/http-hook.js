@@ -2,28 +2,35 @@ import { useState, useCallback, useRef, useEffect } from "react";
 const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
-  
-    const activeHttpRequests=useRef([]);
+
+  const activeHttpRequests = useRef([]);
 
   const sendRequest = useCallback(
-    async (url, method = "GET", body = null, headers = {"Content-Type": "application/json"}) => {
+    async (
+      url,
+      method = "GET",
+      body = null,
+      headers = { "Content-Type": "application/json" }
+    ) => {
       setIsLoading(true);
-      const httpAbortCtrl=new AbortController();
+      const httpAbortCtrl = new AbortController();
       //add current request to active Requests
-      activeHttpRequests.current.push(httpAbortCtrl)
+      activeHttpRequests.current.push(httpAbortCtrl);
       try {
         const response = await fetch(url, {
           method,
           body,
           headers,
-          signal:httpAbortCtrl.signal
+          signal: httpAbortCtrl.signal,
         });
 
         const responseData = await response.json();
         if (!response.ok) {
           throw new Error(responseData.message);
         }
-        activeHttpRequests.current=activeHttpRequests.current.filter(reqCtrl=>reqCtrl!==httpAbortCtrl);
+        activeHttpRequests.current = activeHttpRequests.current.filter(
+          (reqCtrl) => reqCtrl !== httpAbortCtrl
+        );
         setIsLoading(false);
         return responseData;
       } catch (err) {
@@ -31,7 +38,6 @@ const useHttpClient = () => {
         setError(err.message);
         throw err;
       }
-      
     },
     []
   );
@@ -40,12 +46,12 @@ const useHttpClient = () => {
     setError(null);
   };
 
-  useEffect(()=>{
-      //it will run when component is unmount.
-      return ()=>{
-          activeHttpRequests.current.forEach(abortCtrl=>abortCtrl.abort());
-      };
-  },[])
+  useEffect(() => {
+    //it will run when component is unmount.
+    return () => {
+      activeHttpRequests.current.forEach((abortCtrl) => abortCtrl.abort());
+    };
+  }, []);
   return { isLoading, error, sendRequest, clearError };
 };
 
