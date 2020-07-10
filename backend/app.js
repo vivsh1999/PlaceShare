@@ -13,9 +13,13 @@ const mongoose = require("mongoose");
 
 const app = express();
 
+//parsing all json data in body of request
 app.use(bodyParser.json());
 
+
+//static file serving
 app.use('/uploads/images/',express.static(path.join('uploads','images')));
+app.use(express.static(path.join('public')));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,14 +31,23 @@ app.use((req, res, next) => {
   next();
 });
 
+//main routes
 app.use("/api/places", placesRoutes);
 
 app.use("/api/users", userRoutes);
 
+//frontend routes handling
+app.use((req,res,next)=>{
+  res.sendFile(path.resolve(__dirname,'public','index.html'));
+})
+
+//unhandled errors
 app.use((req, res, next) => {
   throw new HttpError("Cannot find specified route.", 404);
 });
 
+
+//image file deletion if found file in request that failed
 app.use((error, req, res, next) => {
   if (req.file){
     fs.unlink(req.file.path,(err)=>{
@@ -47,16 +60,18 @@ app.use((error, req, res, next) => {
   res.status(error.code || 500);
   res.json({ message: error.message || "An Error Occurred!" });
 });
+
+//mongoose defaults
 mongoose.set("useNewUrlParser", true);
 mongoose.set("useFindAndModify", false);
 mongoose.set("useCreateIndex", true);
 mongoose.set("useUnifiedTopology", true);
 mongoose
   .connect(
-    "mongodb+srv://vivek:K077oFTfuUydyGLJ@cluster0-elmjk.mongodb.net/place_share?retryWrites=true&w=majority"
+    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0-elmjk.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
   )
   .then(() => {
-    app.listen(5000);
+    app.listen(process.env.PORT || 5000);
     console.log("connected");
   })
   .catch((err) => {

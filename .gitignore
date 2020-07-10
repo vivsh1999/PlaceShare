@@ -16,6 +16,9 @@
 .env.production
 backend/nodemon.json
 backend/uploads/images/*
+
+/backend/.git
+ parent of ae92cfe... Revert "production ready"
 # misc
 .DS_Store
 .env.local

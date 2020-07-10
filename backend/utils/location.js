@@ -1,3 +1,4 @@
+const API_KEY=process.env.GOOGLE_API_KEY;
 const getCoordsForAddress=async (address)=>{
     
     //pretending if object came from an api request
