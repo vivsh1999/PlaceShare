@@ -10,7 +10,10 @@
 
 # production
 /build
-
+/backend/public
+.env
+.env.production
+backend/nodemon.json
 # misc
 .DS_Store
 .env.local
