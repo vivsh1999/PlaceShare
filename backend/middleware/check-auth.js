@@ -11,7 +11,7 @@ const checkToken = (req, res, next) => {
     if (!token) {
       throw new Error();
     }
-    const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    const decodedToken = jwt.verify(token, "SECRET_KEY");
     req.userData = { userId: decodedToken.userId };
     next();
   } catch (error) {

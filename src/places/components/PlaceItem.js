@@ -27,7 +27,7 @@ const PlaceItem = (props) => {
     setShowConfirmModal(false);
     try {
       await sendRequest(
-        `${process.env.REACT_APP_WEB_URL}/places/${props.id}`,
+        `http://localhost:5000/api/places/${props.id}`,
         "DELETE",
         null,
         { Authorization: "Bearer " + auth.token }
@@ -50,7 +50,7 @@ const PlaceItem = (props) => {
         footerClass="place-item__modal-actions"
         footer={<Button onClick={closeMapHandler}>CLOSE</Button>}
       >
-        <div className="map-container">
+        <div className="map-containter">
           <Map center={props.coordinates} zoom={16} />
         </div>
       </Modal>
@@ -77,7 +77,7 @@ const PlaceItem = (props) => {
           {isLoading && <LoadingSpinner asOverlay />}
           <div className="place-item__image">
             <img
-              src={`${process.env.REACT_APP_ASSETS_URL}/${props.image}`}
+              src={`http://localhost:5000/${props.image}`}
               alt={props.title}
             />
           </div>
