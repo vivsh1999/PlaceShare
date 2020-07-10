@@ -41,7 +41,7 @@ const UpdatePlace = (props) => {
     const getCurrentData = async () => {
       try {
         const responseData = await sendRequest(
-          `http://localhost:5000/api/places/${placeId}`
+          `${process.env.REACT_APP_WEB_URL}/places/${placeId}`
         );
         setPlace(responseData);
         if (responseData) {
@@ -71,7 +71,7 @@ const UpdatePlace = (props) => {
     console.log();
     try {
       await sendRequest(
-        `http://localhost:5000/api/places/${placeId}`,
+        `${process.env.REACT_APP_WEB_URL}/places/${placeId}`,
         "PATCH",
         JSON.stringify({
           title: formState.inputs.title.value,
