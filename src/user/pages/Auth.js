@@ -17,6 +17,14 @@ import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import useHttpClient from "../../shared/hooks/http-hook";
 import ImageUpload from "../../shared/components/FormElements/ImageUpload";
+
+var uselessVariable=20;
+var uselessString="";
+if(uselessVariable==20)
+{
+    uselessString="useless";
+}
+
 const Auth = (props) => {
   const auth = useContext(AuthContext);
 
